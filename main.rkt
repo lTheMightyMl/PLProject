@@ -1,10 +1,13 @@
 #lang racket
 
-(require (lib "eopl.ss" "eopl"))
+;(require (lib "eopl.ss" "eopl"))
 
 (require parser-tools/lex
          (prefix-in : parser-tools/lex-sre)
          parser-tools/yacc)
+
+(require "environments.rkt")
+(require "data-structures.rkt")
 
 (define simple-python-lexer
   (lexer
@@ -54,37 +57,6 @@
 
 (define string->variable-name
    (lambda (stx) #'stx))
-
-(define-datatype python-exp python-exp?
-  (pass)
-  (break)
-  (continue)
-  (number (num number?))
-  (identifier (id identifier?))
-  (assign (id string?) (val python-exp?))
-  (return-void)
-  (return-value (exp python-exp?))
-  (define-global (exp python-exp?))
-  (define-function-with-params (name python-exp?) (params list?) (body python-exp?))
-  (define-function-without-params (name python-exp?) (body python-exp?))
-  (if (conditions python-exp?) (body python-exp?) (else python-exp?))
-  (for (counter string?) (range python-exp?) (body python-exp?))
-  (or (arg1 boolean?) (arg2 boolean?))
-  (and (arg1 boolean?) (arg2 boolean?))
-  (not (arg boolean?))
-  (compare-eq (arg1 python-exp?) (arg2 python-exp?))
-  (compare-lt (arg1 python-exp?) (arg2 python-exp?))
-  (compare-gt (arg1 python-exp?) (arg2 python-exp?))
-  (add (arg1 python-exp?) (arg2 python-exp?))
-  (subtract (arg1 python-exp?) (arg2 python-exp?))
-  (power (arg1 python-exp?) (arg2 python-exp?))
-  (multiply (arg1 python-exp?) (arg2 python-exp?))
-  (divide (arg1 python-exp?) (arg2 python-exp?))
-  (plus (arg python-exp?))
-  (minus (arg python-exp?))
-  (get-index (id string?) (index python-exp?))
-  (call-function-with-no-argument (id string?))
-  (call-function-with-arguments (id string?) (args list?)))
 
 (define-tokens a (NUMBER ID))
 (define-empty-tokens b (EOF semicolon pass break continue equal-sign return global def rpar lpar colon empty-params comma if else for in or and not eq lt gt plus minus multiply divide power lbra rbra empty-args true false none empty-list))
