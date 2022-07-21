@@ -44,7 +44,9 @@
     (call-function-with-arguments (id string?) (args python-exp?))
     (id-atom (id symbol?))
     (none)
-    (list-atom (lis python-exp?)))
+    (list-atom (lis python-exp?))
+    (python-list (exps python-exp?))
+    (empty-list))
 
   (define-datatype environment environment?
     (empty-env)

@@ -137,8 +137,8 @@
      ((List) (list-atom $1)))
 
     (List
-     ((lbra Expressions rbra) $2)
-     ((empty-list) `()))
+     ((lbra Expressions rbra) (python-list $2))
+     ((empty-list) (empty-list)))
 
     (Expressions
      ((Expression) $1)
