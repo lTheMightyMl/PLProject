@@ -10,6 +10,7 @@
     (statements (statements python-exp?) (statement python-exp?))
     (params (params python-exp?) (param python-exp?))
     (args (args python-exp?) (arg python-exp?))
+    (expressions (expressions python-exp?) (expression python-exp?))
     (pass)
     (break)
     (continue)
