@@ -1,0 +1,1 @@
+("8.5" ta6le ("a5e84bb7bbca6ded0542f634c7a53e6672bb513c" . "8c297bd1d930275302dc00ad97234fee918ea2d4") #"/home/amoohashem/Desktop/HWs/PL-proj/PLProject/store.rkt" (collects #"eopl" #"eopl.rkt") (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))

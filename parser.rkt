@@ -9,19 +9,21 @@
   (define string->variable-name
    (lambda (stx) #'stx))
   
-  (define simple-python-parser
+
+(define simple-python-parser
   (parser
    (start Program)
    (end EOF)
    (error void)
    (tokens a b)
    (grammar
+    
     (Program
      ((Statements) $1))
     
     (Statements
-     ((Statement semicolon) (list $1))
-     ((Statements Statement semicolon) (append $1 (list $2))))
+     ((Statement semicolon) $1)
+     ((Statements Statement semicolon) (statements $1 $2)))
     
     (Statement
      ((Compound_stmt) $1)
@@ -55,11 +57,11 @@
      ((def ID empty-params colon Statements) (define-function-without-params $2 $5)))
 
     (Params
-     ((Param_with_default) (list $1))
-     ((Params comma Param_with_default) (append $1 $3)))
+     ((Param_with_default) $1)
+     ((Params comma Param_with_default) (params $1 $3)))
 
     (Param_with_default
-     ((ID equal-sign Expression) (assign $1 $3)))
+     ((ID equal-sign Expression) (assign-def $1 $3)))
 
     (If_stmt
      ((if Expression colon Statements Else_block) (if $2 $4 $5)))
@@ -126,8 +128,8 @@
      ((Primary lpar Arguments rpar) (call-function-with-arguments $1 $3)))
 
     (Arguments
-     ((Expression) (list $1))
-     ((Arguments comma Expression) (append $1 $3)))
+     ((Expression) $1)
+     ((Arguments comma Expression) (args $1 $3)))
 
     (Atom
      ((ID) (identifier (string->variable-name $1)))
