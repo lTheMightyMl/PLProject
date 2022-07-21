@@ -7,12 +7,16 @@
   (provide (all-from-out eopl))
 
   (define-datatype python-exp python-exp?
+    (statements (statements python-exp?) (statement python-exp?))
+    (params (params python-exp?) (param python-exp?))
+    (args (args python-exp?) (arg python-exp?))
     (pass)
     (break)
     (continue)
     (number (num number?))
     (identifier (id symbol?))
     (assign (id string?) (val python-exp?))
+    (assign-def (id string?) (val python-exp?))
     (return-void)
     (return-value (exp python-exp?))
     (define-global (exp python-exp?))

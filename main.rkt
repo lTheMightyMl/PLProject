@@ -19,5 +19,3 @@
 (define your-lexer (lex-this simple-python-lexer (open-input-string "a=1; b=2; c=3; d=4;")))
 
 (simple-python-parser your-lexer)
-
-
