@@ -59,16 +59,16 @@
     (extend-env-rec*
      (proc-name symbol?)
      (proc-def expval?)
-     (saved-env environment?))
-    (extend-env-stack
-     (val expval?)
-     (env environment?)))
+     (saved-env environment?)))
 
   (define-datatype proc proc?
-    (procedure
-     (bvar symbol?)
-     (body python-exp?)
-     (env environment?)))
+    (procedure-with-params
+     (name symbol?)
+     (params python-exp?)
+     (body python-exp?))
+    (procedure-without-params
+     (name symbol?)
+     (body python-exp?)))
 
   (define-datatype expval expval?
     (num-val

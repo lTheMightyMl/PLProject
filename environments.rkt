@@ -26,22 +26,7 @@
         (extend-env-rec* (p-name p-def saved-env)
                          (if (eqv? search-var p-name)
                              p-def
-                             (apply-env saved-env search-var)))
-        (extend-env-stack (val saved-env)
-                          (apply-env saved-env search-var)))))
-
-  (define pop-stack
-    (lambda (env search-var)
-      (cases environment env
-        (empty-env ()
-                   (eopl:error 'apply-env "No binding for ~s" search-var))
-        (extend-env (bvar bval saved-env)
-                    (pop-stack saved-env search-var))
-        (extend-env-rec* (p-name p-def saved-env)
-                        (pop-stack saved-env search-var))
-        (extend-env-stack (val saved-env)
-                                val)
-        )))
+                             (apply-env saved-env search-var))))))
 
   ;; location : Sym * Listof(Sym) -> Maybe(Int)
   ;; (location sym syms) returns the location of sym in syms or #f is
