@@ -1,1 +1,0 @@
-("8.5" ta6le ("fc59a46d1cb34bc001e8d2db67c9d8fb48604d6f" . "f59c41fd22c9f9705a9db68a464cf2195af742b6") (collects #"errortrace" #"errortrace-key.rkt") (collects #"parser-tools" #"lex-sre.rkt") (collects #"parser-tools" #"lex.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
