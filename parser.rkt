@@ -141,8 +141,8 @@
      ((empty-list) `()))
 
     (Expressions
-     ((Expression) (list $1))
-     ((Expressions comma Expression) (append $1 $3)))
+     ((Expression) $1)
+     ((Expressions comma Expression) (expressions $1 $3)))
 
     )))
 )
