@@ -68,12 +68,13 @@
    (error void)
    (tokens a b)
    (grammar
+    
     (Program
      ((Statements) $1))
     
     (Statements
-     ((Statement semicolon) (list $1))
-     ((Statements Statement semicolon) (cons $2 $1)))
+     ((Statement semicolon) $1)
+     ((Statements Statement semicolon) (statements $1 $2)))
     
     (Statement
      ((Compound_stmt) $1)
@@ -107,11 +108,11 @@
      ((def ID empty-params colon Statements) (define-function-without-params $2 $5)))
 
     (Params
-     ((Param_with_default) (list $1))
-     ((Params comma Param_with_default) (append $1 $3)))
+     ((Param_with_default) $1)
+     ((Params comma Param_with_default) (params $1 $3)))
 
     (Param_with_default
-     ((ID equal-sign Expression) (assign $1 $3)))
+     ((ID equal-sign Expression) (assign-def $1 $3)))
 
     (If_stmt
      ((if Expression colon Statements Else_block) (if $2 $4 $5)))
@@ -178,8 +179,8 @@
      ((Primary lpar Arguments rpar) (call-function-with-arguments $1 $3)))
 
     (Arguments
-     ((Expression) (list $1))
-     ((Arguments comma Expression) (append $1 $3)))
+     ((Expression) $1)
+     ((Arguments comma Expression) (args $1 $3)))
 
     (Atom
      ((ID) (identifier (string->variable-name $1)))
@@ -205,5 +206,3 @@
 (define your-lexer (lex-this simple-python-lexer (open-input-string "a=1; b=2; c=3; d=4;")))
 
 (simple-python-parser your-lexer)
-
-
