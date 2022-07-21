@@ -130,11 +130,11 @@
 
     (Atom
      ((ID) (identifier (string->symbol $1)))
-     ((true) #t)
-     ((false) #f)
-     ((none) null)
+     ((true) (boolean #t))
+     ((false) (boolean #f))
+     ((none) (none))
      ((NUMBER) (number $1))
-     ((List) $1))
+     ((List) (list-atom $1)))
 
     (List
      ((lbra Expressions rbra) $2)

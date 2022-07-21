@@ -11,11 +11,12 @@
 
 (define (value-of exp env)
   (cases python-exp exp
+    (statements (stmts stmt) (value-of (value-of stmt) env))
     (else '())))
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
 
-(define your-lexer (lex-this simple-python-lexer (open-input-string "a=1; b=2; c=3; d=4;")))
+(define your-lexer (lex-this simple-python-lexer (open-input-string "if a: a = 2; else: b = 2;;")))
 
 (simple-python-parser your-lexer)

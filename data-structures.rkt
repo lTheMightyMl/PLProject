@@ -16,6 +16,7 @@
     (continue)
     (number (num number?))
     (identifier (id symbol?))
+    (boolean (bool boolean?))
     (assign (id string?) (val python-exp?))
     (assign-def (id string?) (val python-exp?))
     (return-void)
@@ -40,7 +41,10 @@
     (minus (arg python-exp?))
     (get-index (id string?) (index python-exp?))
     (call-function-with-no-argument (id string?))
-    (call-function-with-arguments (id string?) (args list?)))
+    (call-function-with-arguments (id string?) (args python-exp?))
+    (id-atom (id symbol?))
+    (none)
+    (list-atom (lis python-exp?)))
 
   (define-datatype environment environment?
     (empty-env)
