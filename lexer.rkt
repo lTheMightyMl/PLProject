@@ -19,7 +19,7 @@
      ("(" (token-lpar))
      (")" (token-rpar))
      (":" (token-colon))
-     ("():" (token-empty-params))
+     ("()" (token-empty-params))
      ("," (token-comma))
      ("if" (token-if))
      ("else" (token-else))

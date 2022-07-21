@@ -21,7 +21,12 @@
          (expval->bool (car (value-of cond env is-global)))
          (value-of body env is-global)
          (value-of else-body env is-global)))
-    (for (counter expression statements)) ; todo
+    (for (id expression statements)
+      (begin
+        (define list (expval->list (value-of expression env is-global)))
+        (null? list
+               (list `() env #f)
+               (handle-for id list statements))))
     (or (arg1 arg2)
         (begin
           (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
@@ -58,7 +63,7 @@
           ))
     (print (atom)
            (begin
-             (print-handler atom)
+             (handle-print atom)
              (list `() env #f)))
 
 
@@ -106,32 +111,51 @@
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
 
 (define your-lexer (lex-this simple-python-lexer (open-input-string "
-l = [1,2,3,4,5,6,7,8,9,10];
-for a in l:
-    if a<5:
-       continue;
-    else:
-       if a>8:
-          break;
-       else:
-          print(2);
-       ;
-    ;
+checked
+def f(n: int = 0) -> int:
+    a: int = n;
+    b: int = n + 1;
+    return a ** b;
 ;
+
+def g() -> bool:
+    c :bool = 1 < 7 and 13 > 17 or 1 == 1;
+    print(c);
+    return c;
+;
+
+l: list = [1, 3, 5, 7];
+a: int = 0;
+
+if g():
+    a = l[3];
+else:
+    a = l[2];
+;
+print(a);
 ")))
 
 (simple-python-parser your-lexer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define print-handler
+(define handle-print
   (lambda (atom)
     (if
      (list? atom)
-     (displayln (exp-val->printable atom))
+     (displayln (expval->printable atom))
      (begin
-       (displayln (exp-val->printable (car atom)))
-       (if (null? (cdr atom)) '() (print-handler (cdr atom)))
+       (displayln (expval->printable (car atom)))
+       (if (null? (cdr atom)) '() (handle-print (cdr atom)))
        ))))
 
-; todo: exp-val->printable
+(define handle-for
+  (lambda (id list statements old-env)
+    (define new-step (value-of statements (extend-env id (car list) old-env)))
+    (define step-val (car new-step))
+    (define new-env (cadr new-step))
+    (define flag (caddr new-step))
+    (if (or (not (zero? flag)) (null? list))
+        new-step
+        (handle-for id (cdr list) statements new-env))
+    ))

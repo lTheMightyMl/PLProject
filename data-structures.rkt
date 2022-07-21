@@ -23,7 +23,7 @@
     (return-void)
     (return-value (exp python-exp?))
     (define-global (exp python-exp?))
-    (define-function-with-params (name python-exp?) (params list?) (body python-exp?))
+    (define-function-with-params (name python-exp?) (params python-exp?) (body python-exp?))
     (define-function-without-params (name python-exp?) (body python-exp?))
     (if (conditions python-exp?) (body python-exp?) (else python-exp?))
     (for (counter string?) (range python-exp?) (body python-exp?))
@@ -40,9 +40,9 @@
     (divide (arg1 python-exp?) (arg2 python-exp?))
     (plus (arg python-exp?))
     (minus (arg python-exp?))
-    (get-index (id string?) (index python-exp?))
-    (call-function-with-no-argument (id string?))
-    (call-function-with-arguments (id string?) (args python-exp?))
+    (get-index (id python-exp?) (index python-exp?))
+    (call-function-with-no-argument (id python-exp?))
+    (call-function-with-arguments (id python-exp?) (args python-exp?))
     (id-atom (id symbol?))
     (none)
     (list-atom (lis python-exp?))
@@ -120,4 +120,14 @@
       (eopl:error 'expval-extractors "Looking for a ~s, found ~s"
                   variant value)))
 
+  (define expval->printable
+    (lambda exp
+      (cases expval exp
+        (num-val (val) (expval->num val))
+        (bool-val (val) (expval->bool val))
+        (list-val (val) (expval->list val))
+        (none-val (val) (expval->none val))
+        (else `error)
+        )))
+  
   )

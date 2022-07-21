@@ -51,8 +51,8 @@
      ((global ID) (define-global $2)))
 
     (Function_def
-     ((def ID lpar Params rpar colon Statements) (define-function-with-params $2 $4 $7))
-     ((def ID empty-params colon Statements) (define-function-without-params $2 $5)))
+     ((def ID lpar Params rpar colon Statements) (define-function-with-params (identifier (string->symbol $2)) $4 $7))
+     ((def ID empty-params colon Statements) (define-function-without-params (identifier (string->symbol $2)) $5)))
 
     (Params
      ((Param_with_default) $1)
