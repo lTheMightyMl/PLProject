@@ -11,6 +11,7 @@
     (params (params python-exp?) (param python-exp?))
     (args (args python-exp?) (arg python-exp?))
     (expressions (expressions python-exp?) (expression python-exp?))
+    (atoms (atoms python-exp?) (atom python-exp?))
     (pass)
     (break)
     (continue)
@@ -46,7 +47,8 @@
     (none)
     (list-atom (lis python-exp?))
     (python-list (exps python-exp?))
-    (empty-list))
+    (empty-list)
+    (print (atom python-exp?)))
 
   (define-datatype environment environment?
     (empty-env)

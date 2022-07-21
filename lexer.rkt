@@ -43,6 +43,7 @@
      ("True" (token-true))
      ("False" (token-false))
      ("None" (token-none))
+     ("print" (token-print))
      ("[]" (token-empty-list))
      ((:or (:+ (char-range #\0 #\9))
            (:: (:+ (char-range #\0 #\9)) #\. (:+ (char-range #\0 #\9))))
@@ -52,6 +53,6 @@
      (whitespace (simple-python-lexer input-port))))
 
   (define-tokens a (NUMBER ID))
-  (define-empty-tokens b (EOF semicolon pass break continue equal-sign return global def rpar lpar colon empty-params comma if else for in or and not eq lt gt plus minus multiply divide power lbra rbra empty-args true false none empty-list))
+  (define-empty-tokens b (EOF semicolon pass break continue equal-sign return global def rpar lpar colon empty-params comma if else for in or and not eq lt gt plus minus multiply divide power lbra rbra empty-args true false none empty-list print))
   
   )
