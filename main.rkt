@@ -14,15 +14,55 @@
 
 (define (value-of exp env is-global)
   (cases python-exp exp
+    
+    ; Hashem:
     (if (cond body else-body)
         (if
-         cond
-         (value-of body env)
-         (value-of else-body env)))
+         (expval->bool (car (value-of cond env is-global)))
+         (value-of body env is-global)
+         (value-of else-body env is-global)))
+    (for (counter expression statements)) ; todo
+    (or (arg1 arg2)
+        (begin
+          (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
+          (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
+          (or arg1-bool-val arg2-bool-val)
+          ))
+    (and (arg1 arg2)
+        (begin
+          (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
+          (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
+          (and arg1-bool-val arg2-bool-val)
+          ))
+    (not (arg)
+        (begin
+          (define arg-bool-val (expval->bool (car (value-of arg env is-global))))
+          (not arg-bool-val)))
+    (compare-eq (arg1 arg2)
+        (begin
+          (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
+          (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
+          (equal? arg1-num-val arg2-num-val)
+          ))
+    (compare-lt (arg1 arg2)
+        (begin
+          (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
+          (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
+          (< arg1-num-val arg2-num-val)
+          ))
+    (compare-gt (arg1 arg2)
+        (begin
+          (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
+          (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
+          (> arg1-num-val arg2-num-val)
+          ))
     (print (atom)
            (begin
              (print-handler atom)
              (list `() env #f)))
+
+
+    ; Sadegh:
     (statements (stmts stmt)
                 (begin
                   (define ret-val (value-of stmts env))
