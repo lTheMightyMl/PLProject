@@ -45,13 +45,15 @@
     (empty-env)
     (extend-env 
      (bvar symbol?)
-     (bval reference?)                 ; new for implicit-refs
+     (bval expval?)                 ; new for implicit-refs
      (saved-env environment?))
     (extend-env-rec*
-     (proc-names (list-of symbol?))
-     (b-vars (list-of symbol?))
-     (proc-bodies (list-of python-exp?))
-     (saved-env environment?)))
+     (proc-name symbol?)
+     (proc-def expval?)
+     (saved-env environment?))
+    (extend-env-stack
+     (val expval?)
+     (env environment?)))
 
   (define-datatype proc proc?
     (procedure
@@ -61,13 +63,52 @@
 
   (define-datatype expval expval?
     (num-val
-     (value number?))
+     (num number?))
     (bool-val
-     (boolean boolean?))
-    (proc-val 
-     (proc proc?))
-    (ref-val
-     (ref reference?))
+     (bool boolean?))
+    (list-val
+     (lis list?))
+    (none-val
+     (none null?))
+    (proc-val
+     (p proc?))
     )
+
+  (define expval->num
+    (lambda (v)
+      (cases expval v
+        (num-val (num) num)
+        (else (expval-extractor-error 'num v)))))
+
+  (define expval->bool
+    (lambda (v)
+      (cases expval v
+        (bool-val (bool) bool)
+        (else (expval-extractor-error 'bool v)))))
+
+  (define expval->proc
+    (lambda (v)
+      (cases expval v
+        (proc-val (proc) proc)
+        (else (expval-extractor-error 'proc v)))))
+
+
+  (define expval->list
+    (lambda (v)
+      (cases expval v
+        (list-val (lis) lis)
+        (else (expval-extractor-error 'list v)))))
+
+  (define expval->none
+    (lambda (v)
+      (cases expval v
+        (none-val (none) none)
+        (else (expval-extractor-error 'none v)))))
+
+  
+  (define expval-extractor-error
+    (lambda (variant value)
+      (eopl:error 'expval-extractors "Looking for a ~s, found ~s"
+                  variant value)))
 
   )
