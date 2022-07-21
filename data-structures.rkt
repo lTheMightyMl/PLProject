@@ -1,16 +1,17 @@
 (module data-structures racket
 
-  (require (lib "eopl.ss" "eopl"))
   (require "store.rkt")
+  (require eopl)
 
   (provide (all-defined-out))
+  (provide (all-from-out eopl))
 
   (define-datatype python-exp python-exp?
     (pass)
     (break)
     (continue)
     (number (num number?))
-    (identifier (id identifier?))
+    (identifier (id symbol?))
     (assign (id string?) (val python-exp?))
     (return-void)
     (return-value (exp python-exp?))

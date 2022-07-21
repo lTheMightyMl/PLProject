@@ -5,9 +5,6 @@
   (require "lexer.rkt")
 
   (provide (all-defined-out))
-
-  (define string->variable-name
-   (lambda (stx) #'stx))
   
   (define simple-python-parser
   (parser
@@ -130,7 +127,7 @@
      ((Arguments comma Expression) (append $1 $3)))
 
     (Atom
-     ((ID) (identifier (string->variable-name $1)))
+     ((ID) (identifier (string->symbol $1)))
      ((true) #t)
      ((false) #f)
      ((none) null)
