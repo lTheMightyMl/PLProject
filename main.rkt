@@ -9,9 +9,13 @@
 (require "lexer.rkt")
 (require "parser.rkt")
 
-(define (value-of exp env)
+(define global-scope '())
+(define return-stack '())
+
+(define (value-of exp env is-global)
   (cases python-exp exp
-    (statements (stmts stmt) (value-of (value-of stmt) env))
+    (statements (stmts stmt)
+                (value-of (value-of stmt) env))
     (else '())))
 
 ;test
