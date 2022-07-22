@@ -75,14 +75,14 @@
 
     (Disjunction
      ((Conjunction) $1)
-     ((Disjunction or Conjunction) (or $1 $3)))
+     ((Disjunction or Conjunction) (or-dt $1 $3)))
 
     (Conjunction
      ((Inversion) $1)
-     ((Conjunction and Inversion) (and $1 $3)))
+     ((Conjunction and Inversion) (and-dt $1 $3)))
 
     (Inversion
-     ((not Inversion) (not $2))
+     ((not Inversion) (not-dt $2))
      ((Comparison) $1))
 
     (Comparison

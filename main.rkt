@@ -29,20 +29,20 @@
         (if (null? lis)
             (list `() env 0)
             (handle-for id lis statements))))
-    (or (arg1 arg2)
+    (or-dt (arg1 arg2)
         (begin
           (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
           (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
           (list (bool-val (or arg1-bool-val arg2-bool-val) env is-global
                           ))))
-    (and (arg1 arg2)
+    (and-dt (arg1 arg2)
          (begin
            (pretty-print arg1)
            (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
            (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
            (list (bool-val (and arg1-bool-val arg2-bool-val)) env is-global
                  )))
-    (not (arg)
+    (not-dt (arg)
          (begin
            (define arg-bool-val (expval->bool (car (value-of arg env is-global))))
            (list (bool-val (not arg-bool-val)) env is-global)
@@ -185,36 +185,10 @@
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
 
 (define your-lexer (lex-this simple-python-lexer (open-input-string "
-def f(n = 0):
-    a = n;
-    b = n + 1;
-    return a ** b;
-;
-
-def g():
-    c = 1 < 7 and 13 > 17 or 1 == 1;
-    print(c);
-    return c;
-;
-
-l = [1, 3, 5, 7];
-
-if g():
-    h = f;
-    d = h(3);
-    print(d);
-else:
-    print(0);
-;
-
-x = 0;
-if False:
-    x = l[2];
-else:
-    x = l[3];
-;
-print(x);
+c = 1 < 7 and 13 > 17;
 ")))
+
+;(simple-python-parser your-lexer)
 
 (value-of (simple-python-parser your-lexer) (empty-env) #t)
 
