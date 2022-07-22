@@ -20,7 +20,7 @@
        (if (null? (cdr atom)) '() (handle-print (cdr atom)))
        )
      (displayln (expval->printable atom))
-          )))
+     )))
 
 (define handle-for
   (lambda (id list statements old-env)
@@ -37,10 +37,11 @@
 
 (define global-scope (empty-env))
 (define return-stack '())
+(define globals '())
 
 (define (value-of exp env is-global)
   (cases python-exp exp
-    
+
     ; Hashem:
     (if (cond body else-body)
         (if
@@ -56,25 +57,24 @@
             (handle-for id lis statements))))
     
     (or-dt (arg1 arg2)
-        (begin
-          (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
-          (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
-          (list (bool-val (or arg1-bool-val arg2-bool-val)) env is-global)
-                          ))
+           (begin
+             (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
+             (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
+             (list (bool-val (or arg1-bool-val arg2-bool-val)) env is-global)
+             ))
     
     (and-dt (arg1 arg2)
-         (begin
-           (pretty-print arg1)
-           (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
-           (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
-           (list (bool-val (and arg1-bool-val arg2-bool-val)) env is-global
-                 )))
+            (begin
+              (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
+              (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
+              (list (bool-val (and arg1-bool-val arg2-bool-val)) env is-global
+                    )))
     
     (not-dt (arg)
-         (begin
-           (define arg-bool-val (expval->bool (car (value-of arg env is-global))))
-           (list (bool-val (not arg-bool-val)) env is-global)
-           ))
+            (begin
+              (define arg-bool-val (expval->bool (car (value-of arg env is-global))))
+              (list (bool-val (not arg-bool-val)) env is-global)
+              ))
     
     (compare-eq (arg1 arg2)
                 (begin
@@ -126,7 +126,7 @@
               (define value (car (value-of val env is-global)))
               (cond
                 (is-global (set! global-scope (extend-env (string->symbol var) value global-scope)))
-                (else '())
+                ((member (string->symbol var) (car globals)) (display "here!") (set! global-scope (extend-env (string->symbol var) value global-scope)))
                 )
               (list '() (extend-env (string->symbol var) value env) 0)
               ))
@@ -142,6 +142,12 @@
 
     (return-void () (list '() env 1))
 
+    (identifier (name)
+                (cond
+                  (is-global (list (apply-env global-scope name) env is-global))
+                  (else list (apply-env env name) env is-global)
+                ))
+
     (return-value (val)
                   (begin
                     (define value (car (value-of val env is-global)))
@@ -149,7 +155,11 @@
                     (list '() env 1)
                     ))
     
-    (define-global (var) (list '() (extend-env var (apply-env global-scope) env) #f))
+    (define-global (var)
+      (begin
+        (set! globals (list (cons (identifier->id-symbol var) (car globals)) (cadr globals)))
+        (list '() (extend-env (identifier->id-symbol var) (apply-env global-scope (identifier->id-symbol var)) env) 0))
+      )
 
     (define-function-with-params (p-name params p-def)
       (begin
@@ -172,7 +182,14 @@
         ))
 
     (call-function-with-no-argument (name)
-      (list (car (value-of (proc->body (expval->proc (apply-env global-scope (identifier->id-symbol name)))) env is-global)) env is-global))
+                                    (begin
+                                      (set! globals (list '() globals))
+                                      (value-of (proc->body (expval->proc (apply-env global-scope (identifier->id-symbol name)))) (empty-env) 0)
+                                      (define res-val (car return-stack))
+                                      (set! return-stack (cdr return-stack))
+                                      (set! globals (cadr globals))
+                                      (list res-val env is-global))
+                                    )
 
 
 
@@ -234,9 +251,14 @@
 
 (define your-lexer (lex-this simple-python-lexer (open-input-string "
 def g():
-    return 1;
+    global b;
+    b = 3;
+    return b;
 ;
+b = 1;
+b = b * 100;
 a = g();
+z = b;
 ")))
 
 ;(simple-python-parser your-lexer)

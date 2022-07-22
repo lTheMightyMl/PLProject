@@ -48,7 +48,7 @@
      ((return Expression) (return-value $2)))
 
     (Global_stmt
-     ((global ID) (define-global $2)))
+     ((global ID) (define-global (identifier (string->symbol $2)))))
 
     (Function_def
      ((def ID lpar Params rpar colon Statements) (define-function-with-params (identifier (string->symbol $2)) $4 $7))
