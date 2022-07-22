@@ -9,6 +9,32 @@
 (require "lexer.rkt")
 (require "parser.rkt")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define handle-print
+  (lambda (atom)
+    (if
+     (list? atom)
+     (begin
+       (displayln (expval->printable (car atom)))
+       (if (null? (cdr atom)) '() (handle-print (cdr atom)))
+       )
+     (displayln (expval->printable atom))
+          )))
+
+(define handle-for
+  (lambda (id list statements old-env)
+    (define new-step (value-of statements (extend-env id (car list) old-env)))
+    (define step-val (car new-step))
+    (define new-env (cadr new-step))
+    (define flag (caddr new-step))
+    (if (or (not (zero? flag)) (null? list))
+        new-step
+        (handle-for id (cdr list) statements new-env))
+    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define global-scope (empty-env))
 (define return-stack '())
 
@@ -21,20 +47,21 @@
          (expval->bool (car (value-of cond env is-global)))
          (value-of body env is-global)
          (value-of else-body env is-global)))
-    (call-function-with-no-argument (name)
-                                    (list (value-of (proc->body (expval->proc (apply-env global-scope (identifier->id-symbol name)))) env is-global) env is-global))
+    
     (for (id expression statements)
       (begin
         (define lis (expval->list (value-of expression env is-global)))
         (if (null? lis)
             (list `() env 0)
             (handle-for id lis statements))))
+    
     (or-dt (arg1 arg2)
         (begin
           (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
           (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
-          (list (bool-val (or arg1-bool-val arg2-bool-val) env is-global
-                          ))))
+          (list (bool-val (or arg1-bool-val arg2-bool-val)) env is-global)
+                          ))
+    
     (and-dt (arg1 arg2)
          (begin
            (pretty-print arg1)
@@ -42,29 +69,34 @@
            (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
            (list (bool-val (and arg1-bool-val arg2-bool-val)) env is-global
                  )))
+    
     (not-dt (arg)
          (begin
            (define arg-bool-val (expval->bool (car (value-of arg env is-global))))
            (list (bool-val (not arg-bool-val)) env is-global)
            ))
+    
     (compare-eq (arg1 arg2)
                 (begin
                   (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
                   (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
                   (list (bool-val (equal? arg1-num-val arg2-num-val)) env is-global)
                   ))
+    
     (compare-lt (arg1 arg2)
                 (begin
                   (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
                   (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
                   (list (bool-val (< arg1-num-val arg2-num-val)) env is-global)
                   ))
+    
     (compare-gt (arg1 arg2)
                 (begin
                   (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
                   (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
                   (list (bool-val (> arg1-num-val arg2-num-val)) env is-global)
                   ))
+    
     (print (atom)
            (begin
              (handle-print atom)
@@ -82,9 +114,13 @@
                     ((1) (list '() ret-env 1))
                     ((2) (list '() ret-env 0))
                     )))
+
     (pass () (list '() env is-global 0))
+
     (break () (list '() env is-global 1))
+
     (continue () (list '() env is-global 2))
+
     (assign (var val)
             (begin
               (define value (car (value-of val env is-global)))
@@ -94,20 +130,27 @@
                 )
               (list '() (extend-env (string->symbol var) value env) 0)
               ))
+
     (python-list (exps)
                  (list (list-val (car (value-of exps env is-global))) env 0))
+
     (single-expression (exp)
                        (list (list (car (value-of exp env is-global))) env 0))
+
     (multi-expression (exps exp)
                       (list (append (car (value-of exps env is-global)) (list (car (value-of exp env is-global)))) env 0))
+
     (return-void () (list '() env 1))
+
     (return-value (val)
                   (begin
                     (define value (car (value-of val env is-global)))
                     (set! return-stack (cons value return-stack))
                     (list '() env 1)
                     ))
+    
     (define-global (var) (list '() (extend-env var (apply-env global-scope) env) #f))
+
     (define-function-with-params (p-name params p-def)
       (begin
         (define value (proc-val (procedure-with-params (identifier->id-symbol p-name) params p-def)))
@@ -117,6 +160,7 @@
           )
         (list '() (extend-env (identifier->id-symbol p-name) value env) 0)
         ))
+
     (define-function-without-params (p-name p-def)
       (begin
         (define value (proc-val (procedure-without-params (identifier->id-symbol p-name) p-def)))
@@ -126,6 +170,10 @@
           )
         (list '() (extend-env (identifier->id-symbol p-name) value env) 0)
         ))
+
+    (call-function-with-no-argument (name)
+      (list (car (value-of (proc->body (expval->proc (apply-env global-scope (identifier->id-symbol name)))) env is-global)) env is-global))
+
 
 
     ; Namdar :
@@ -185,7 +233,10 @@
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
 
 (define your-lexer (lex-this simple-python-lexer (open-input-string "
-c = 1 < 7 and 13 > 17;
+def g():
+    return 1;
+;
+a = g();
 ")))
 
 ;(simple-python-parser your-lexer)
@@ -193,24 +244,3 @@ c = 1 < 7 and 13 > 17;
 (value-of (simple-python-parser your-lexer) (empty-env) #t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define handle-print
-  (lambda (atom)
-    (if
-     (list? atom)
-     (displayln (expval->printable atom))
-     (begin
-       (displayln (expval->printable (car atom)))
-       (if (null? (cdr atom)) '() (handle-print (cdr atom)))
-       ))))
-
-(define handle-for
-  (lambda (id list statements old-env)
-    (define new-step (value-of statements (extend-env id (car list) old-env)))
-    (define step-val (car new-step))
-    (define new-env (cadr new-step))
-    (define flag (caddr new-step))
-    (if (or (not (zero? flag)) (null? list))
-        new-step
-        (handle-for id (cdr list) statements new-env))
-    ))
