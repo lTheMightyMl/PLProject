@@ -37,6 +37,7 @@
                           ))))
     (and (arg1 arg2)
          (begin
+           (pretty-print arg1)
            (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
            (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
            (list (bool-val (and arg1-bool-val arg2-bool-val)) env is-global
@@ -174,7 +175,7 @@
     (minus  (arg) (let ([val (expval->num (car (value-of arg env is-global)))])
                     (list (num-val(- 0 val)) env 0)))
     (number (num)
-            (list num env 0))
+            (list (num-val num) env 0))
 
     (else (begin
             (pretty-print "here")
