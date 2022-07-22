@@ -13,14 +13,11 @@
 
 (define handle-print
   (lambda (atom)
-    (if
-     (list? atom)
-     (begin
-       (displayln (expval->printable (car atom)))
-       (if (null? (cdr atom)) '() (handle-print (cdr atom)))
-       )
-     (displayln (expval->printable atom))
-     )))
+    (cond
+      ((null? atom) (newline))
+      ((list? atom) (handle-print (car atom)) (handle-print (cdr atom)))
+      (else (displayln (expval->printable atom)))
+      )))
 
 (define handle-for
   (lambda (id list statements old-env)
@@ -101,10 +98,10 @@
                   (list (bool-val (> arg1-num-val arg2-num-val)) env 0)
                   ))
     
-    (print (atom)
+    (print (exps)
            (begin
-             (handle-print atom)
-             (list `() env #f)))
+             (handle-print (expval->list (car (value-of exps env is-global))))
+             (list `() env 0)))
 
 
     ; Sadegh:
@@ -114,7 +111,7 @@
                   (define ret-env (cadr ret-val))
                   (define is-ret (caddr ret-val))
                   (case is-ret
-                    ((0) (value-of stmt ret-env 0))
+                    ((0) (value-of stmt ret-env is-global))
                     ((1) (list '() ret-env 1))
                     ((2) (list '() ret-env 0))
                     )))
@@ -128,21 +125,22 @@
     (assign (var val)
             (begin
               (define value (car (value-of val env is-global)))
+
               (cond
                 (is-global (set! global-scope (extend-env (string->symbol var) value global-scope)))
-                ((member (string->symbol var) (car globals)) (display "here!") (set! global-scope (extend-env (string->symbol var) value global-scope)))
+                ((member (string->symbol var) (car globals)) (set! global-scope (extend-env (string->symbol var) value global-scope)))
                 )
               (list '() (extend-env (string->symbol var) value env) 0)
               ))
 
     (python-list (exps)
-                 (list (list-val (car (value-of exps env is-global))) env 0))
+                 (list (car (value-of exps env is-global)) env 0))
 
     (single-expression (exp)
-                       (list (list (car (value-of exp env is-global))) env 0))
+                       (list (list-val (list (car (value-of exp env is-global)))) env 0))
 
     (multi-expression (exps exp)
-                      (list (append (car (value-of exps env is-global)) (list (car (value-of exp env is-global)))) env 0))
+                      (list (list-val (append (expval->list (car (value-of exps env is-global))) (list (car (value-of exp env is-global))))) env 0))
 
     (return-void ()
                  (begin
@@ -192,7 +190,7 @@
     (call-function-with-no-argument (name)
                                     (begin
                                       (set! globals (list '() globals))
-                                      (value-of (proc->body (expval->proc (apply-env global-scope (identifier->id-symbol name)))) (empty-env) 0)
+                                      (value-of (proc->body (expval->proc (car (value-of name env is-global)))) (extend-env (identifier->id-symbol name) (car (value-of name env is-global)) (empty-env)) #f)
                                       (define res-val (car return-stack))
                                       (set! return-stack (cdr return-stack))
                                       (set! globals (cadr globals))
@@ -260,22 +258,17 @@
 (define your-lexer (lex-this simple-python-lexer (open-input-string "
 def g():
     global b;
-    b = 3;
-    return b;
+    if b < 10:
+        print(True);
+        return b + 8;
+    else:
+        print(False);
+        b = b - 7;
+        return g();
+    ;
 ;
-b = 1;
-b = b * 100;
-a = g();
-z = b;
-def h():
-    b = 8;
-    return;
-;
-if False:
-    c = h();
-else:
-    c = 9;
-;
+b = 10;
+print(g());
 ")))
 
 ;(simple-python-parser your-lexer)

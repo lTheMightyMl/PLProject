@@ -135,12 +135,16 @@
                   variant value)))
 
   (define expval->printable
-    (lambda exp
+    (lambda (exp)
       (cases expval exp
-        (num-val (val) (expval->num val))
-        (bool-val (val) (expval->bool val))
-        (list-val (val) (expval->list val))
-        (none-val (val) (expval->none val))
+        (num-val (val) val)
+        (bool-val (val) val)
+        (list-val (val)
+                  (cond
+                    ((null? val) '())
+                    (else (cons (expval->printable (car val)) (expval->printable (list-val (cdr val)))))
+                    ))
+        (none-val (val) val)
         (else `error)
         )))
   
