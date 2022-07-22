@@ -270,3 +270,11 @@ else:
 (value-of (simple-python-parser your-lexer) (empty-env) #t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (lexer-creator file-name)
+  (lex-this simple-python-lexer (open-input-file file-name)))
+
+(define (evaluate file-name)
+  (value-of (simple-python-parser (lexer-creator file-name)) (empty-env) #t))
+
+(evaluate "a.txt")
