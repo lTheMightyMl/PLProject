@@ -32,7 +32,8 @@
      ((Return_stmt) $1)
      ((pass) (pass))
      ((break) (break))
-     ((continue) (continue)))
+     ((continue) (continue))
+     ((Print) $1))
 
     (Compound_stmt
      ((Function_def) $1)
@@ -50,8 +51,8 @@
      ((global ID) (define-global $2)))
 
     (Function_def
-     ((def ID lpar Params rpar colon Statements) (define-function-with-params $2 $4 $7))
-     ((def ID empty-params colon Statements) (define-function-without-params $2 $5)))
+     ((def ID lpar Params rpar colon Statements) (define-function-with-params (identifier (string->symbol $2)) $4 $7))
+     ((def ID empty-params colon Statements) (define-function-without-params (identifier (string->symbol $2)) $5)))
 
     (Params
      ((Param_with_default) $1)
@@ -127,7 +128,7 @@
     (Arguments
      ((Expression) $1)
      ((Arguments comma Expression) (args $1 $3)))
-
+    
     (Atom
      ((ID) (identifier (string->symbol $1)))
      ((true) (boolean #t))
@@ -144,5 +145,8 @@
      ((Expression) $1)
      ((Expressions comma Expression) (expressions $1 $3)))
 
+    (Print
+     ((print lpar Atom rpar) (print $3)))
+    
     )))
 )

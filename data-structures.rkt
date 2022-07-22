@@ -11,6 +11,7 @@
     (params (params python-exp?) (param python-exp?))
     (args (args python-exp?) (arg python-exp?))
     (expressions (expressions python-exp?) (expression python-exp?))
+    (atoms (atoms python-exp?) (atom python-exp?))
     (pass)
     (break)
     (continue)
@@ -22,13 +23,13 @@
     (return-void)
     (return-value (exp python-exp?))
     (define-global (exp python-exp?))
-    (define-function-with-params (name python-exp?) (params list?) (body python-exp?))
+    (define-function-with-params (name python-exp?) (params python-exp?) (body python-exp?))
     (define-function-without-params (name python-exp?) (body python-exp?))
     (if (conditions python-exp?) (body python-exp?) (else python-exp?))
     (for (counter string?) (range python-exp?) (body python-exp?))
-    (or (arg1 boolean?) (arg2 boolean?))
-    (and (arg1 boolean?) (arg2 boolean?))
-    (not (arg boolean?))
+    (or (arg1 python-exp?) (arg2 python-exp?))
+    (and (arg1 python-exp?) (arg2 python-exp?))
+    (not (arg python-exp?))
     (compare-eq (arg1 python-exp?) (arg2 python-exp?))
     (compare-lt (arg1 python-exp?) (arg2 python-exp?))
     (compare-gt (arg1 python-exp?) (arg2 python-exp?))
@@ -39,14 +40,21 @@
     (divide (arg1 python-exp?) (arg2 python-exp?))
     (plus (arg python-exp?))
     (minus (arg python-exp?))
-    (get-index (id string?) (index python-exp?))
-    (call-function-with-no-argument (id string?))
-    (call-function-with-arguments (id string?) (args python-exp?))
+    (get-index (id python-exp?) (index python-exp?))
+    (call-function-with-no-argument (id python-exp?))
+    (call-function-with-arguments (id python-exp?) (args python-exp?))
     (id-atom (id symbol?))
     (none)
     (list-atom (lis python-exp?))
     (python-list (exps python-exp?))
-    (empty-list))
+    (empty-list)
+    (print (atom python-exp?)))
+
+  (define (identifier->id-symbol x)
+    (cases python-exp x
+      (identifier (id) id)
+      (else '()))
+    )
 
   (define-datatype environment environment?
     (empty-env)
@@ -60,10 +68,13 @@
      (saved-env environment?)))
 
   (define-datatype proc proc?
-    (procedure
-     (bvar symbol?)
-     (body python-exp?)
-     (env environment?)))
+    (procedure-with-params
+     (name symbol?)
+     (params python-exp?)
+     (body python-exp?))
+    (procedure-without-params
+     (name symbol?)
+     (body python-exp?)))
 
   (define-datatype expval expval?
     (num-val
@@ -115,4 +126,14 @@
       (eopl:error 'expval-extractors "Looking for a ~s, found ~s"
                   variant value)))
 
+  (define expval->printable
+    (lambda exp
+      (cases expval exp
+        (num-val (val) (expval->num val))
+        (bool-val (val) (expval->bool val))
+        (list-val (val) (expval->list val))
+        (none-val (val) (expval->none val))
+        (else `error)
+        )))
+  
   )
