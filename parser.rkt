@@ -146,7 +146,7 @@
      ((Expressions comma Expression) (multi-expression $1 $3)))
 
     (Print
-     ((print lpar Atom rpar) (print $3)))
+     ((print lpar Expressions rpar) (print $3)))
     
     )))
 )
