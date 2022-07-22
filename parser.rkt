@@ -62,13 +62,13 @@
      ((ID equal-sign Expression) (assign-def $1 $3)))
 
     (If_stmt
-     ((if Expression colon Statements Else_block) (if $2 $4 $5)))
+     ((if Expression colon Statements Else_block) (if-dt $2 $4 $5)))
 
     (Else_block
      ((else colon Statements) $3))
 
     (For_stmt
-     ((for ID in Expression colon Statements) (for $2 $4 $6)))
+     ((for ID in Expression colon Statements) (for-dt $2 $4 $6)))
 
     (Expression
      ((Disjunction) $1))

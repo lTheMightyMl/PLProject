@@ -9,6 +9,10 @@
 (require "lexer.rkt")
 (require "parser.rkt")
 
+(define global-scope (empty-env))
+(define return-stack '())
+(define globals '())
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define handle-print
@@ -21,20 +25,17 @@
 
 (define handle-for
   (lambda (id list statements old-env is-global)
-    (define new-step (value-of statements (extend-env id (car list) old-env) is-global))
+    (set! global-scope (extend-env id (car list) global-scope))
+    (define new-step (value-of statements old-env is-global))
     (define step-val (car new-step))
     (define new-env (cadr new-step))
     (define flag (caddr new-step))
-    (if (or (not (zero? flag)) (null? list))
+    (if (or (not (zero? flag)) (null? (cdr list)))
         new-step
-        (handle-for id (cdr list) statements new-env))
+        (handle-for id (cdr list) statements new-env is-global))
     ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define global-scope (empty-env))
-(define return-stack '())
-(define globals '())
 
 (define (value-of exp env is-global)
   (cases python-exp exp
@@ -44,19 +45,18 @@
              )
 
     ; Hashem:
-    (if (condition body else-body)
+    (if-dt (condition body else-body)
         (cond
           ((expval->bool (car (value-of condition env is-global))) (value-of body env is-global))
           (else (value-of else-body env is-global))
           ))
     
-    (for (id expression statements)
-      (begin
+    (for-dt (id expression statements)
         (define lis (expval->list (car (value-of expression env is-global))))
         (if (null? lis)
             (list `() env 0)
             (handle-for (string->symbol id) lis statements env is-global)
-            )))
+            ))
     
     (or-dt (arg1 arg2)
            (begin
@@ -126,7 +126,6 @@
     (assign (var val)
             (begin
               (define value (car (value-of val env is-global)))
-
               (cond
                 (is-global (set! global-scope (extend-env (string->symbol var) value global-scope)))
                 ((member (string->symbol var) (car globals)) (set! global-scope (extend-env (string->symbol var) value global-scope)))
@@ -267,7 +266,7 @@ else:
 
 ;(simple-python-parser your-lexer)
 
-(value-of (simple-python-parser your-lexer) (empty-env) #t)
+;(value-of (simple-python-parser your-lexer) (empty-env) #t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -276,5 +275,7 @@ else:
 
 (define (evaluate file-name)
   (value-of (simple-python-parser (lexer-creator file-name)) (empty-env) #t))
+
+; (simple-python-parser (lexer-creator "a.txt"))
 
 (evaluate "a.txt")
