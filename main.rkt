@@ -42,12 +42,16 @@
 (define (value-of exp env is-global)
   (cases python-exp exp
 
+    (boolean (b)
+             (list (bool-val b) env 0)
+             )
+
     ; Hashem:
-    (if (cond body else-body)
-        (if
-         (expval->bool (car (value-of cond env is-global)))
-         (value-of body env is-global)
-         (value-of else-body env is-global)))
+    (if (condition body else-body)
+        (cond
+         ((expval->bool (car (value-of condition env is-global))) (value-of body env is-global))
+         (else (value-of else-body env is-global))
+         ))
     
     (for (id expression statements)
       (begin
@@ -60,41 +64,41 @@
            (begin
              (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
              (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
-             (list (bool-val (or arg1-bool-val arg2-bool-val)) env is-global)
+             (list (bool-val (or arg1-bool-val arg2-bool-val)) env 0)
              ))
     
     (and-dt (arg1 arg2)
             (begin
               (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
               (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
-              (list (bool-val (and arg1-bool-val arg2-bool-val)) env is-global
-                    )))
+              (list (bool-val (and arg1-bool-val arg2-bool-val)) env 0)
+              ))
     
     (not-dt (arg)
             (begin
               (define arg-bool-val (expval->bool (car (value-of arg env is-global))))
-              (list (bool-val (not arg-bool-val)) env is-global)
+              (list (bool-val (not arg-bool-val)) env 0)
               ))
     
     (compare-eq (arg1 arg2)
                 (begin
                   (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
                   (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
-                  (list (bool-val (equal? arg1-num-val arg2-num-val)) env is-global)
+                  (list (bool-val (equal? arg1-num-val arg2-num-val)) env 0)
                   ))
     
     (compare-lt (arg1 arg2)
                 (begin
                   (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
                   (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
-                  (list (bool-val (< arg1-num-val arg2-num-val)) env is-global)
+                  (list (bool-val (< arg1-num-val arg2-num-val)) env 0)
                   ))
     
     (compare-gt (arg1 arg2)
                 (begin
                   (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
                   (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
-                  (list (bool-val (> arg1-num-val arg2-num-val)) env is-global)
+                  (list (bool-val (> arg1-num-val arg2-num-val)) env 0)
                   ))
     
     (print (atom)
@@ -110,7 +114,7 @@
                   (define ret-env (cadr ret-val))
                   (define is-ret (caddr ret-val))
                   (case is-ret
-                    ((0) (value-of stmt ret-env is-global))
+                    ((0) (value-of stmt ret-env 0))
                     ((1) (list '() ret-env 1))
                     ((2) (list '() ret-env 0))
                     )))
@@ -140,12 +144,16 @@
     (multi-expression (exps exp)
                       (list (append (car (value-of exps env is-global)) (list (car (value-of exp env is-global)))) env 0))
 
-    (return-void () (list '() env 1))
+    (return-void ()
+                 (begin
+                   (set! return-stack (cons (none-val '()) return-stack))
+                   (list '() env 1)
+                 ))
 
     (identifier (name)
                 (cond
-                  (is-global (list (apply-env global-scope name) env is-global))
-                  (else list (apply-env env name) env is-global)
+                  (is-global (list (apply-env global-scope name) env 0))
+                  (else (list (apply-env env name) env 0))
                 ))
 
     (return-value (val)
@@ -188,7 +196,7 @@
                                       (define res-val (car return-stack))
                                       (set! return-stack (cdr return-stack))
                                       (set! globals (cadr globals))
-                                      (list res-val env is-global))
+                                      (list res-val env 0))
                                     )
 
 
@@ -259,6 +267,15 @@ b = 1;
 b = b * 100;
 a = g();
 z = b;
+def h():
+    b = 8;
+    return;
+;
+if False:
+    c = h();
+else:
+    c = 9;
+;
 ")))
 
 ;(simple-python-parser your-lexer)
