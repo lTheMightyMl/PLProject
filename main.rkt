@@ -20,8 +20,8 @@
       )))
 
 (define handle-for
-  (lambda (id list statements old-env)
-    (define new-step (value-of statements (extend-env id (car list) old-env)))
+  (lambda (id list statements old-env is-global)
+    (define new-step (value-of statements (extend-env id (car list) old-env) is-global))
     (define step-val (car new-step))
     (define new-env (cadr new-step))
     (define flag (caddr new-step))
@@ -46,16 +46,17 @@
     ; Hashem:
     (if (condition body else-body)
         (cond
-         ((expval->bool (car (value-of condition env is-global))) (value-of body env is-global))
-         (else (value-of else-body env is-global))
-         ))
+          ((expval->bool (car (value-of condition env is-global))) (value-of body env is-global))
+          (else (value-of else-body env is-global))
+          ))
     
     (for (id expression statements)
       (begin
-        (define lis (expval->list (value-of expression env is-global)))
+        (define lis (expval->list (car (value-of expression env is-global))))
         (if (null? lis)
             (list `() env 0)
-            (handle-for id lis statements))))
+            (handle-for (string->symbol id) lis statements env is-global)
+            )))
     
     (or-dt (arg1 arg2)
            (begin
@@ -146,13 +147,13 @@
                  (begin
                    (set! return-stack (cons (none-val '()) return-stack))
                    (list '() env 1)
-                 ))
+                   ))
 
     (identifier (name)
                 (cond
                   (is-global (list (apply-env global-scope name) env 0))
                   (else (list (apply-env env name) env 0))
-                ))
+                  ))
 
     (return-value (val)
                   (begin
@@ -256,19 +257,12 @@
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
 
 (define your-lexer (lex-this simple-python-lexer (open-input-string "
-def g():
-    global b;
-    if b < 10:
-        print(True);
-        return b + 8;
-    else:
-        print(False);
-        b = b - 7;
-        return g();
-    ;
+if True:
+    b = 7;
+    print(b);
+else:
+    print(False);
 ;
-b = 10;
-print(g());
 ")))
 
 ;(simple-python-parser your-lexer)
