@@ -50,6 +50,12 @@
     (empty-list)
     (print (atom python-exp?)))
 
+  (define (identifier->id-symbol x)
+    (cases python-exp x
+      (identifier (id) id)
+      (else '()))
+    )
+
   (define-datatype environment environment?
     (empty-env)
     (extend-env 

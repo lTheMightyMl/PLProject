@@ -23,44 +23,45 @@
          (value-of else-body env is-global)))
     (for (id expression statements)
       (begin
-        (define list (expval->list (value-of expression env is-global)))
-        (null? list
-               (list `() env #f)
-               (handle-for id list statements))))
+        (define lis (expval->list (value-of expression env is-global)))
+        (if (null? lis)
+            (list `() env 0)
+            (handle-for id lis statements))))
     (or (arg1 arg2)
         (begin
           (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
           (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
-          (or arg1-bool-val arg2-bool-val)
-          ))
+          (list (bool-val (or arg1-bool-val arg2-bool-val) env is-global
+                          ))))
     (and (arg1 arg2)
-        (begin
-          (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
-          (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
-          (and arg1-bool-val arg2-bool-val)
-          ))
+         (begin
+           (define arg1-bool-val (expval->bool (car (value-of arg1 env is-global))))
+           (define arg2-bool-val (expval->bool (car (value-of arg2 env is-global))))
+           (list (bool-val (and arg1-bool-val arg2-bool-val)) env is-global
+                 )))
     (not (arg)
-        (begin
-          (define arg-bool-val (expval->bool (car (value-of arg env is-global))))
-          (not arg-bool-val)))
+         (begin
+           (define arg-bool-val (expval->bool (car (value-of arg env is-global))))
+           (list (bool-val (not arg-bool-val)) env is-global)
+           ))
     (compare-eq (arg1 arg2)
-        (begin
-          (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
-          (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
-          (equal? arg1-num-val arg2-num-val)
-          ))
+                (begin
+                  (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
+                  (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
+                  (list (bool-val (equal? arg1-num-val arg2-num-val)) env is-global)
+                  ))
     (compare-lt (arg1 arg2)
-        (begin
-          (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
-          (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
-          (< arg1-num-val arg2-num-val)
-          ))
+                (begin
+                  (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
+                  (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
+                  (list (bool-val (< arg1-num-val arg2-num-val)) env is-global)
+                  ))
     (compare-gt (arg1 arg2)
-        (begin
-          (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
-          (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
-          (> arg1-num-val arg2-num-val)
-          ))
+                (begin
+                  (define arg1-num-val (expval->num (car (value-of arg1 env is-global))))
+                  (define arg2-num-val (expval->num (car (value-of arg2 env is-global))))
+                  (list (bool-val (> arg1-num-val arg2-num-val)) env is-global)
+                  ))
     (print (atom)
            (begin
              (handle-print atom)
@@ -70,40 +71,48 @@
     ; Sadegh:
     (statements (stmts stmt)
                 (begin
-                  (define ret-val (value-of stmts env))
+                  (define ret-val (value-of stmts env is-global))
                   (define ret-env (cadr ret-val))
                   (define is-ret (caddr ret-val))
-                  (if is-ret
-                      (list '() ret-env #f)
-                      (value-of stmt ret-env is-global)
-                      )))
-    (pass () (list '() env is-global #f))
-    (break () (list '() env is-global #t))
+                  (case is-ret
+                    ((0) (value-of stmt ret-env is-global))
+                    ((1) (list '() ret-env 1))
+                    ((2) (list '() ret-env 0))
+                    )))
+    (pass () (list '() env is-global 0))
+    (break () (list '() env is-global 1))
+    (continue () (list '() env is-global 2))
     (assign (var val)
             (begin
               (define value (value-of val env is-global))
-              (if is-global (set! global-scope (extend-env var value global-scope)))
-              (list '() (extend-env var value env) #f)
+              (if is-global (set! global-scope (extend-env (string->symbol var) value global-scope)))
+              (list '() (extend-env var value env) 0)
               ))
-    (return-void () (list '() env #t))
+    (return-void () (list '() env 1))
     (return-value (val)
                   (begin
                     (define value (car (value-of val env is-global)))
                     (set! return-stack (cons value return-stack))
-                    (list '() env #t)
+                    (list '() env 1)
                     ))
     (define-global (var) (list '() (extend-env var (apply-env global-scope) env) #f))
     (define-function-with-params (p-name params p-def)
       (begin
-        (define value (proc-val (procedure-with-params p-name params p-def)))
-        (if is-global (set! global-scope (extend-env p-name value global-scope)))
-        (list '() (extend-env p-name value env) #f)
+        (define value (proc-val (procedure-with-params (identifier->id-symbol p-name) params p-def)))
+        (cond
+          (is-global (set! global-scope (extend-env (identifier->id-symbol p-name) value global-scope)))
+          (else '())
+          )
+        (list '() (extend-env (identifier->id-symbol p-name) value env) 0)
         ))
     (define-function-without-params (p-name p-def)
       (begin
-        (define value (proc-val (procedure-without-params p-name p-def)))
-        (if is-global (set! global-scope (extend-env p-name value global-scope)))
-        (list '() (extend-env p-name value env) #f)
+        (define value (proc-val (procedure-without-params (identifier->id-symbol p-name) p-def)))
+        (cond
+          (is-global (set! global-scope (extend-env (identifier->id-symbol p-name) value global-scope)))
+          (else '())
+          )
+        (list '() (extend-env (identifier->id-symbol p-name) value env) 0)
         ))
     (else '())))
 
@@ -111,31 +120,38 @@
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
 
 (define your-lexer (lex-this simple-python-lexer (open-input-string "
-checked
-def f(n: int = 0) -> int:
-    a: int = n;
-    b: int = n + 1;
+def f(n = 0):
+    a = n;
+    b = n + 1;
     return a ** b;
 ;
 
-def g() -> bool:
-    c :bool = 1 < 7 and 13 > 17 or 1 == 1;
+def g():
+    c = 1 < 7 and 13 > 17 or 1 == 1;
     print(c);
     return c;
 ;
 
-l: list = [1, 3, 5, 7];
-a: int = 0;
+l = [1, 3, 5, 7];
 
 if g():
-    a = l[3];
+    h = f;
+    d = h(3);
+    print(d);
 else:
-    a = l[2];
+    print(0);
 ;
-print(a);
+
+x = 0;
+if False:
+    x = l[2];
+else:
+    x = l[3];
+;
+print(x);
 ")))
 
-(simple-python-parser your-lexer)
+(value-of (simple-python-parser your-lexer) (empty-env) #t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
