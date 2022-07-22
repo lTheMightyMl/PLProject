@@ -135,15 +135,15 @@
      ((false) (boolean #f))
      ((none) (none))
      ((NUMBER) (number $1))
-     ((List) (list-atom $1)))
+     ((List) $1))
 
     (List
      ((lbra Expressions rbra) (python-list $2))
      ((empty-list) (empty-list)))
 
     (Expressions
-     ((Expression) $1)
-     ((Expressions comma Expression) (expressions $1 $3)))
+     ((Expression) (single-expression $1))
+     ((Expressions comma Expression) (multi-expression $1 $3)))
 
     (Print
      ((print lpar Atom rpar) (print $3)))

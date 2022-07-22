@@ -18,11 +18,11 @@
     (lambda (env search-var)
       (cases environment env
         (empty-env ()
-                   (eopl:error 'apply-env "Empty stack"))
+                   (eopl:error 'apply-env "Empty env"))
         (extend-env (bvar bval saved-env)
-                    (if (eqv? search-var bvar)
-                        bval
-                        (apply-env saved-env search-var)))
+                    (cond
+                      ((eq? search-var bvar) bval)
+                        (else (apply-env saved-env search-var))))
         (extend-env-rec* (p-name p-def saved-env)
                          (if (eqv? search-var p-name)
                              p-def

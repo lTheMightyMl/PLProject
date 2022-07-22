@@ -21,6 +21,8 @@
          (expval->bool (car (value-of cond env is-global)))
          (value-of body env is-global)
          (value-of else-body env is-global)))
+    (call-function-with-no-argument (name)
+                                    (list (value-of (proc->body (expval->proc (apply-env global-scope (identifier->id-symbol name)))) env is-global) env is-global))
     (for (id expression statements)
       (begin
         (define lis (expval->list (value-of expression env is-global)))
@@ -84,10 +86,19 @@
     (continue () (list '() env is-global 2))
     (assign (var val)
             (begin
-              (define value (value-of val env is-global))
-              (if is-global (set! global-scope (extend-env (string->symbol var) value global-scope)))
-              (list '() (extend-env var value env) 0)
+              (define value (car (value-of val env is-global)))
+              (cond
+                (is-global (set! global-scope (extend-env (string->symbol var) value global-scope)))
+                (else '())
+                )
+              (list '() (extend-env (string->symbol var) value env) 0)
               ))
+    (python-list (exps)
+                 (list (list-val (car (value-of exps env is-global))) env 0))
+    (single-expression (exp)
+                       (list (list (car (value-of exp env is-global))) env 0))
+    (multi-expression (exps exp)
+                      (list (append (car (value-of exps env is-global)) (list (car (value-of exp env is-global)))) env 0))
     (return-void () (list '() env 1))
     (return-value (val)
                   (begin
@@ -116,55 +127,58 @@
         ))
 
 
-      ; Namdar :
-      (compare-eq (arg1 arg2)
-                (let ([val1 (car (value-of arg1 env is-global))]
-                      [val2 (car (value-of arg2 env is-global))])
-                      (list (if (eqv? (expval->num val1) (expval->num val2))
-                        (bool-val #t) (bool-val #f)) env #f)))
-
-    (compare-lt (arg1 arg2)
-                (let ([val1 (car (value-of arg1 env is-global))]
-                      [val2 (car (value-of arg2 env is-global))])
-                      (list (if (< (expval->num val1) (expval->num val2))
-                        (bool-val #t) (bool-val #f)) env #f)))
-                        
-    (compare-gt (arg1 arg2)
-                (let ([val1 (car (value-of arg1 env is-global))]
-                      [val2 (car (value-of arg2 env is-global))])
-                      (list (if (> (expval->num val1) (expval->num val2))
-                        (bool-val #t) (bool-val #f)) env #f)))
+    ; Namdar :
+    ;      (compare-eq (arg1 arg2)
+    ;                (let ([val1 (car (value-of arg1 env is-global))]
+    ;                      [val2 (car (value-of arg2 env is-global))])
+    ;                      (list (if (eqv? (expval->num val1) (expval->num val2))
+    ;                        (bool-val #t) (bool-val #f)) env #f)));
+    ;
+    ;    (compare-lt (arg1 arg2)
+    ;                (let ([val1 (car (value-of arg1 env is-global))]
+    ;                      [val2 (car (value-of arg2 env is-global))])
+    ;                      (list (if (< (expval->num val1) (expval->num val2))
+    ;                        (bool-val #t) (bool-val #f)) env #f)))
+    ;                        
+    ;    (compare-gt (arg1 arg2)
+    ;                (let ([val1 (car (value-of arg1 env is-global))]
+    ;                      [val2 (car (value-of arg2 env is-global))])
+    ;                      (list (if (> (expval->num val1) (expval->num val2))
+    ;                        (bool-val #t) (bool-val #f)) env #f)))
 
     (add  (arg1 arg2)
           (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
                 [val2 (expval->num (car (value-of arg2 env is-global)))])
-                (list (num-val (+ val1 val2)) env #f)))
+            (list (num-val (+ val1 val2)) env 0)))
                 
     (subtract (arg1 arg2)
               (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
                     [val2 (expval->num (car (value-of arg2 env is-global)))])
-                    (list (num-val (- val1 val2)) env #f)))
+                (list (num-val (- val1 val2)) env 0)))
     (power  (arg1 arg2)
             (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
                   [val2 (expval->num (car (value-of arg2 env is-global)))])
-                  (list (num-val (expt val1 val2)) env #f)))
+              (list (num-val (expt val1 val2)) env 0)))
     (multiply (arg1 arg2)
               (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
                     [val2 (expval->num (car (value-of arg2 env is-global)))])
-                    (list (num-val (* val1 val2)) env #f)))
+                (list (num-val (* val1 val2)) env 0)))
     (divide (arg1 arg2)
             (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
                   [val2 (expval->num (car (value-of arg2 env is-global)))])
-                  (list (num-val (/ val1 val2)) env #f)))
+              (list (num-val (/ val1 val2)) env 0)))
 
     (plus (arg) (let ([val (car (value-of arg env is-global))])
-                  (list val env #f)))
+                  (list val env 0)))
 
     (minus  (arg) (let ([val (expval->num (car (value-of arg env is-global)))])
-                  (list (num-val(- 0 val)) env #f)))
-    
+                    (list (num-val(- 0 val)) env 0)))
+    (number (num)
+            (list num env 0))
 
-    (else '())))
+    (else (begin
+            (pretty-print "here")
+            (pretty-print exp)))))
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))

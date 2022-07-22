@@ -10,7 +10,8 @@
     (statements (statements python-exp?) (statement python-exp?))
     (params (params python-exp?) (param python-exp?))
     (args (args python-exp?) (arg python-exp?))
-    (expressions (expressions python-exp?) (expression python-exp?))
+    (single-expression (exp python-exp?))
+    (multi-expression (expressions python-exp?) (expression python-exp?))
     (atoms (atoms python-exp?) (atom python-exp?))
     (pass)
     (break)
@@ -45,7 +46,6 @@
     (call-function-with-arguments (id python-exp?) (args python-exp?))
     (id-atom (id symbol?))
     (none)
-    (list-atom (lis python-exp?))
     (python-list (exps python-exp?))
     (empty-list)
     (print (atom python-exp?)))
@@ -75,6 +75,14 @@
     (procedure-without-params
      (name symbol?)
      (body python-exp?)))
+
+  (define (proc->body p)
+    (cases proc p
+      (procedure-with-params (name params body)
+                             body)
+      (procedure-without-params (name body)
+                                body)
+      ))
 
   (define-datatype expval expval?
     (num-val
