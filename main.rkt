@@ -160,7 +160,7 @@
 
     (return-void ()
                  (begin
-                   (set! return-stack (cons (none-val '()) return-stack))
+                   (set! return-stack (cons (none-val) return-stack))
                    (list '() env 1)
                    ))
 
