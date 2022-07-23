@@ -1,6 +1,5 @@
 (module data-structures racket
 
-  (require "store.rkt")
   (require eopl)
 
   (provide (all-defined-out))

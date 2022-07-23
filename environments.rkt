@@ -1,7 +1,6 @@
 (module environments (lib "eopl.ss" "eopl")
   
   (require "data-structures.rkt")
-  (require "store.rkt")
   (provide init-env empty-env extend-env apply-env)
 
   ;;;;;;;;;;;;;;;; initial environment ;;;;;;;;;;;;;;;;
