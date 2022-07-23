@@ -141,7 +141,7 @@
 
     (assign (var val)
             (begin
-              (define value (car (value-of val env is-global)))
+              (define value (thunk-val ( delay (car (value-of val env is-global)))))
               (cond
                 (is-global (set! global-scope (extend-env (string->symbol var) value global-scope)))
                 ((member (string->symbol var) (car globals)) (set! global-scope (extend-env (string->symbol var) value global-scope)))
@@ -236,10 +236,10 @@
                                     (apply-function func args)
                                   ))
     (args (args arg)
-          (list (append (car (value-of args env is-global)) (list (car (value-of arg env is-global)))) env 0))
+          (list (append (car (value-of args env is-global)) (list (thrunk-val (delay(car (value-of arg env is-global)))) env 0))
 
     (single-arg (exp)
-                (list (list (car (value-of exp env is-global))) env 0)
+                (list (list (thrunk-val (delay (car (value-of exp env is-global)))) env 0))
                 )
     
     ;      (compare-eq (arg1 arg2)

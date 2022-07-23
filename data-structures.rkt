@@ -97,24 +97,29 @@
      (none null?))
     (proc-val
      (p proc?))
+    (thunk-val 
+      (tv promise?))
     )
 
   (define expval->num
     (lambda (v)
       (cases expval v
         (num-val (num) num)
+        (thunk-val (tv) (force tv))
         (else (expval-extractor-error 'num v)))))
 
   (define expval->bool
     (lambda (v)
       (cases expval v
         (bool-val (bool) bool)
+        (thunk-val (tv) (force tv))
         (else (expval-extractor-error 'bool v)))))
 
   (define expval->proc
     (lambda (v)
       (cases expval v
         (proc-val (proc) proc)
+        (thunk-val (tv) (force tv))
         (else (expval-extractor-error 'proc v)))))
 
 
@@ -122,12 +127,14 @@
     (lambda (v)
       (cases expval v
         (list-val (lis) lis)
+        (thunk-val (tv) (force tv))
         (else (expval-extractor-error 'list v)))))
 
   (define expval->none
     (lambda (v)
       (cases expval v
         (none-val (none) none)
+        (thunk-val (tv) (force tv))
         (else (expval-extractor-error 'none v)))))
 
   
@@ -139,6 +146,7 @@
   (define expval->printable
     (lambda (exp)
       (cases expval exp
+        (thunk-val (tv) (expval->printable (force tv)))
         (num-val (val) val)
         (bool-val (val) val)
         (list-val (val)
