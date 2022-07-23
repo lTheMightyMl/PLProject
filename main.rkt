@@ -203,6 +203,18 @@
         (list '() (extend-env (identifier->id-symbol p-name) value env) 0)
         ))
 
+    (assign-def (id exp)
+                (list (list (string->symbol id) (value-of exp (empty-env) #f)) (empty-env) 0)
+                )
+
+    (single-param (param)
+                  (list (list (car (value-of param (empty-env) #f))) (empty-env) 0)
+                  )
+
+    (params (params param)
+            (list (list (append (car (value-of params (empty-env) #f)) (car (value-of param (empty-env) #f)))) (empty-env) 0)
+            )
+
     (call-function-with-no-argument (name)
                                     (begin
                                       (set! globals (list '() globals))

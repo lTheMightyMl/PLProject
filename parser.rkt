@@ -55,7 +55,7 @@
      ((def ID empty-params colon Statements) (define-function-without-params (identifier (string->symbol $2)) $5)))
 
     (Params
-     ((Param_with_default) $1)
+     ((Param_with_default) (single-param $1))
      ((Params comma Param_with_default) (params $1 $3)))
 
     (Param_with_default

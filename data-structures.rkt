@@ -8,6 +8,7 @@
 
   (define-datatype python-exp python-exp?
     (statements (statements python-exp?) (statement python-exp?))
+    (single-param (param python-exp?))
     (params (params python-exp?) (param python-exp?))
     (args (args python-exp?) (arg python-exp?))
     (single-expression (exp python-exp?))
