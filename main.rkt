@@ -261,9 +261,13 @@
     ;                        (bool-val #t) (bool-val #f)) env #f)))
 
     (add  (arg1 arg2)
-          (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
-                [val2 (expval->num (car (value-of arg2 env is-global)))])
-            (list (num-val (+ val1 val2)) env 0)))
+          (let ([val1 (car (value-of arg1 env is-global))]
+                [val2 (car (value-of arg2 env is-global))])
+            (cases expval val1
+              (num-val (number1) (list (num-val (+ number1 (expval->num val2))) env 0))
+              (list-val (list1) (list (list-val (append list1 (expval->list val2))) env 0))
+              (else `error))
+            ))
                 
     (subtract (arg1 arg2)
               (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
