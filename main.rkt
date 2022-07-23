@@ -204,7 +204,7 @@
         ))
 
     (assign-def (id exp)
-                (list (list (string->symbol id) (value-of exp (empty-env) #f)) (empty-env) 0)
+                (list (list (string->symbol id) (car (value-of exp (empty-env) #f))) (empty-env) 0)
                 )
 
     (single-param (param)
@@ -212,7 +212,7 @@
                   )
 
     (params (params param)
-            (list (list (append (car (value-of params (empty-env) #f)) (car (value-of param (empty-env) #f)))) (empty-env) 0)
+            (list (append (car (value-of params (empty-env) #f)) (list (car (value-of param (empty-env) #f)))) (empty-env) 0)
             )
 
     ; (call-function-with-no-argument (name)
@@ -230,6 +230,17 @@
     (call-function-with-no-argument (name) 
                                     (let ([func (expval->proc (car (value-of name env is-global)))])
                                       (apply-function func '())))
+    (call-function-with-arguments (name args)
+                                  (let ([func (expval->proc (car (value-of name env is-global)))]
+                                        [args (car (value-of args env is-global))])
+                                    (apply-function func args)
+                                  ))
+    (args (args arg)
+          (list (append (car (value-of args env is-global)) (list (car (value-of arg env is-global)))) env 0))
+
+    (single-arg (exp)
+                (list (list (car (value-of exp env is-global))) env 0)
+                )
     
     ;      (compare-eq (arg1 arg2)
     ;                (let ([val1 (car (value-of arg1 env is-global))]
@@ -299,15 +310,15 @@
                              (begin
                                 (set! globals (list '() globals))
                                 (define par-val (car (value-of params (empty-env) #f)))
-                                (value-of body (init-env-func par-val args (empty-env))) #f)
+                                (value-of body (init-env-func par-val args (empty-env)) #f)
                                 (define res-val (car return-stack))
                                 (set! return-stack (cdr return-stack))
                                 (set! globals (cadr globals))
                                 (list res-val (empty-env) 0)
                                 ))
 
-    (else 'Error)
-  ))
+    (else 'Error))
+  )
 
   (define (init-env-func defaults args env)
     (cond

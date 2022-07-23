@@ -49,7 +49,8 @@
     (none)
     (python-list (exps python-exp?))
     (empty-list)
-    (print (atom python-exp?)))
+    (print (atom python-exp?))
+    (single-arg (exp python-exp?)))
 
   (define (identifier->id-symbol x)
     (cases python-exp x

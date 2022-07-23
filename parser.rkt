@@ -126,7 +126,7 @@
      ((Primary lpar Arguments rpar) (call-function-with-arguments $1 $3)))
 
     (Arguments
-     ((Expression) $1)
+     ((Expression) (single-arg $1))
      ((Arguments comma Expression) (args $1 $3)))
     
     (Atom
