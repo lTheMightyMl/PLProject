@@ -274,9 +274,11 @@
                   [val2 (expval->num (car (value-of arg2 env is-global)))])
               (list (num-val (expt val1 val2)) env 0)))
     (multiply (arg1 arg2)
-              (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
-                    [val2 (expval->num (car (value-of arg2 env is-global)))])
-                (list (num-val (* val1 val2)) env 0)))
+              (let ([val1 (expval->num (car (value-of arg1 env is-global)))])
+                (if (zero? val1)
+                    (list (num-val 0) env 0)
+                    (let ([val2 (expval->num (car (value-of arg2 env is-global)))])
+                      (list (num-val (* val1 val2)) env 0)))))
     (divide (arg1 arg2)
             (let ([val1 (expval->num (car (value-of arg1 env is-global)))]
                   [val2 (expval->num (car (value-of arg2 env is-global)))])
@@ -310,7 +312,7 @@
                              (begin
                                 (set! globals (list '() globals))
                                 (define par-val (car (value-of params (empty-env) #f)))
-                                (value-of body (init-env-func par-val args (empty-env)) #f)
+                                (value-of body (extend-env name (proc-val func) (init-env-func par-val args (empty-env))) #f)
                                 (define res-val (car return-stack))
                                 (set! return-stack (cdr return-stack))
                                 (set! globals (cadr globals))

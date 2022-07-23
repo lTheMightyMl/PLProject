@@ -18,7 +18,7 @@
     (lambda (env search-var)
       (cases environment env
         (empty-env ()
-                   (eopl:error 'apply-env "Empty env"))
+                   (eopl:error 'apply-env "Empty env ~s" search-var))
         (extend-env (bvar bval saved-env)
                     (cond
                       ((eq? search-var bvar) bval)
