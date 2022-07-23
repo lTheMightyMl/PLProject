@@ -295,10 +295,28 @@
                                 (set! globals (cadr globals))
                                 (list res-val (empty-env) 0)
                                 ))
-    (procedure-with-params (name params body) '())
+    (procedure-with-params (name params body) 
+                             (begin
+                                (set! globals (list '() globals))
+                                (define par-val (car (value-of params (empty-env) #f)))
+                                (value-of body (init-env-func par-val args (empty-env))) #f)
+                                (define res-val (car return-stack))
+                                (set! return-stack (cdr return-stack))
+                                (set! globals (cadr globals))
+                                (list res-val (empty-env) 0)
+                                ))
 
     (else 'Error)
   ))
+
+  (define (init-env-func defaults args env)
+    (cond
+      [(null? defaults) env]
+      [(null? args) (init-env-func (cdr defaults) null
+                                    (extend-env (car(car defaults)) (cadr(car defaults)) env))]
+      [else (init-env-func (cdr defaults) (cdr args)
+                            (extend-env (car(car defaults)) (car args) env))]
+      ))
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
