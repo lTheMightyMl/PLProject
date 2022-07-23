@@ -104,6 +104,12 @@
              (handle-print (expval->list (car (value-of exps env is-global))))
              (list `() env 0)))
 
+    (get-index (arr-name index-number)
+               (begin
+                 (define arr (expval->list (car (value-of arr-name env is-global))))
+                 (list (list-ref arr (expval->num (car (value-of index-number env is-global)))) env is-global)
+                 ))
+
 
     ; Sadegh:
     (statements (stmts stmt)
