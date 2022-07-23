@@ -105,21 +105,21 @@
     (lambda (v)
       (cases expval v
         (num-val (num) num)
-        (thunk-val (tv) (force tv))
+        (thunk-val (tv) (expval->num(force tv)))
         (else (expval-extractor-error 'num v)))))
 
   (define expval->bool
     (lambda (v)
       (cases expval v
         (bool-val (bool) bool)
-        (thunk-val (tv) (force tv))
+        (thunk-val (tv) (expval->bool(force tv)))
         (else (expval-extractor-error 'bool v)))))
 
   (define expval->proc
     (lambda (v)
       (cases expval v
         (proc-val (proc) proc)
-        (thunk-val (tv) (force tv))
+        (thunk-val (tv) (expval->proc(force tv)))
         (else (expval-extractor-error 'proc v)))))
 
 
@@ -127,14 +127,14 @@
     (lambda (v)
       (cases expval v
         (list-val (lis) lis)
-        (thunk-val (tv) (force tv))
+        (thunk-val (tv) (expval->list(force tv)))
         (else (expval-extractor-error 'list v)))))
 
   (define expval->none
     (lambda (v)
       (cases expval v
         (none-val (none) none)
-        (thunk-val (tv) (force tv))
+        (thunk-val (tv) (expval->none(force tv)))
         (else (expval-extractor-error 'none v)))))
 
   

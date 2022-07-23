@@ -236,10 +236,10 @@
                                     (apply-function func args)
                                   ))
     (args (args arg)
-          (list (append (car (value-of args env is-global)) (list (thrunk-val (delay(car (value-of arg env is-global)))) env 0))
+          (list (append (car (value-of args env is-global)) (list (thunk-val (delay(car (value-of arg env is-global))))) env 0)))
 
     (single-arg (exp)
-                (list (list (thrunk-val (delay (car (value-of exp env is-global)))) env 0))
+                (list (list (thunk-val (delay (car (value-of exp env is-global)))) env 0))
                 )
     
     ;      (compare-eq (arg1 arg2)
