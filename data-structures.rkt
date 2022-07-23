@@ -62,10 +62,6 @@
     (extend-env 
      (bvar symbol?)
      (bval expval?)                 ; new for implicit-refs
-     (saved-env environment?))
-    (extend-env-rec*
-     (proc-name symbol?)
-     (proc-def expval?)
      (saved-env environment?)))
 
   (define-datatype proc proc?
@@ -92,8 +88,7 @@
      (bool boolean?))
     (list-val
      (lis list?))
-    (none-val
-     (none null?))
+    (none-val)
     (proc-val
      (p proc?))
     (thunk-val 
@@ -132,7 +127,7 @@
   (define expval->none
     (lambda (v)
       (cases expval v
-        (none-val (none) none)
+        (none-val () none)
         (thunk-val (tv) (expval->none(force tv)))
         (else (expval-extractor-error 'none v)))))
 
@@ -153,7 +148,7 @@
                     ((null? val) '())
                     (else (cons (expval->printable (car val)) (expval->printable (list-val (cdr val)))))
                     ))
-        (none-val (val) val)
+        (none-val () 'None)
         (else `error)
         )))
   
