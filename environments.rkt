@@ -22,7 +22,7 @@
         (extend-env (bvar bval saved-env)
                     (cond
                       ((eq? search-var bvar) bval)
-                        (else (apply-env saved-env search-var))))
+                      (else (apply-env saved-env search-var))))
         (extend-env-rec* (p-name p-def saved-env)
                          (if (eqv? search-var p-name)
                              p-def

@@ -24,16 +24,26 @@
       )))
 
 (define handle-for
-  (lambda (id list statements old-env is-global)
-    (set! global-scope (extend-env id (car list) global-scope))
-    (define new-step (value-of statements old-env is-global))
+  (lambda (id lis statements old-env is-global)
+    (define iter-env (assign-helper id (car lis) old-env is-global))
+    (define new-step (value-of statements iter-env is-global))
     (define step-val (car new-step))
     (define new-env (cadr new-step))
     (define flag (caddr new-step))
-    (if (or (not (zero? flag)) (null? (cdr list)))
-        new-step
-        (handle-for id (cdr list) statements new-env is-global))
+    (if (null? (cdr lis))
+        (list step-val new-env 0)
+        (case flag
+          ((0 2) (handle-for id (cdr lis) statements new-env is-global))
+          (else (list step-val new-env 0))
+          ))
     ))
+
+(define (assign-helper var value env is-global)
+  (cond
+    (is-global (set! global-scope (extend-env var value global-scope)))
+    ((member var (car globals)) (set! global-scope (extend-env var value global-scope)))
+    )
+  (extend-env var value env))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -46,17 +56,17 @@
 
     ; Hashem:
     (if-dt (condition body else-body)
-        (cond
-          ((expval->bool (car (value-of condition env is-global))) (value-of body env is-global))
-          (else (value-of else-body env is-global))
-          ))
+           (cond
+             ((expval->bool (car (value-of condition env is-global))) (value-of body env is-global))
+             (else (value-of else-body env is-global))
+             ))
     
     (for-dt (id expression statements)
-        (define lis (expval->list (car (value-of expression env is-global))))
-        (if (null? lis)
-            (list `() env 0)
-            (handle-for (string->symbol id) lis statements env is-global)
-            ))
+            (define lis (expval->list (car (value-of expression env is-global))))
+            (if (null? list)
+                (list `() env 0)
+                (handle-for (string->symbol id) lis statements env is-global)
+                ))
     
     (or-dt (arg1 arg2)
            (begin
@@ -107,7 +117,7 @@
     (get-index (arr-name index-number)
                (begin
                  (define arr (expval->list (car (value-of arr-name env is-global))))
-                 (list (list-ref arr (expval->num (car (value-of index-number env is-global)))) env is-global)
+                 (list (list-ref arr (expval->num (car (value-of index-number env is-global)))) env 0)
                  ))
 
 
@@ -120,14 +130,14 @@
                   (case is-ret
                     ((0) (value-of stmt ret-env is-global))
                     ((1) (list '() ret-env 1))
-                    ((2) (list '() ret-env 0))
+                    ((2) (list '() ret-env 2))
                     )))
 
-    (pass () (list '() env is-global 0))
+    (pass () (list '() env 0))
 
-    (break () (list '() env is-global 1))
+    (break () (list '() env 1))
 
-    (continue () (list '() env is-global 2))
+    (continue () (list '() env 2))
 
     (assign (var val)
             (begin
