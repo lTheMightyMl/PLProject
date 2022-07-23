@@ -228,8 +228,8 @@
 
     ; Namdar :
     (call-function-with-no-argument (name) 
-                                    (let ([func (value-of name)])
-                                      (apply-function func))
+                                    (let ([func (expval->proc (car (value-of name env is-global)))])
+                                      (apply-function func '())))
     
     ;      (compare-eq (arg1 arg2)
     ;                (let ([val1 (car (value-of arg1 env is-global))]
@@ -281,17 +281,24 @@
 
     (else (begin
             (pretty-print "here")
-            (pretty-print exp)))))
+            (pretty-print exp))))
 )
 
-(define (apply-function func env)
+(define (apply-function func args)
   (cases proc func
     (procedure-without-params (name body)
-      )
-    (procedure-with-params (name params body))
+                              (begin
+                                (set! globals (list '() globals))
+                                (value-of body (extend-env name (proc-val func) (empty-env)) #f)
+                                (define res-val (car return-stack))
+                                (set! return-stack (cdr return-stack))
+                                (set! globals (cadr globals))
+                                (list res-val (empty-env) 0)
+                                ))
+    (procedure-with-params (name params body) '())
 
-    ('Error))
-  )
+    (else 'Error)
+  ))
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
