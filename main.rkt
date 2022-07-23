@@ -215,19 +215,22 @@
             (list (list (append (car (value-of params (empty-env) #f)) (car (value-of param (empty-env) #f)))) (empty-env) 0)
             )
 
-    (call-function-with-no-argument (name)
-                                    (begin
-                                      (set! globals (list '() globals))
-                                      (value-of (proc->body (expval->proc (car (value-of name env is-global)))) (extend-env (identifier->id-symbol name) (car (value-of name env is-global)) (empty-env)) #f)
-                                      (define res-val (car return-stack))
-                                      (set! return-stack (cdr return-stack))
-                                      (set! globals (cadr globals))
-                                      (list res-val env 0))
-                                    )
-
+    ; (call-function-with-no-argument (name)
+    ;                                 (begin
+    ;                                   (set! globals (list '() globals))
+    ;                                   (value-of (proc->body (expval->proc (car (value-of name env is-global)))) (extend-env (identifier->id-symbol name) (car (value-of name env is-global)) (empty-env)) #f)
+    ;                                   (define res-val (car return-stack))
+    ;                                   (set! return-stack (cdr return-stack))
+    ;                                   (set! globals (cadr globals))
+    ;                                   (list res-val env 0))
+    ;                                 )
 
 
     ; Namdar :
+    (call-function-with-no-argument (name) 
+                                    (let ([func (value-of name)])
+                                      (apply-function func))
+    
     ;      (compare-eq (arg1 arg2)
     ;                (let ([val1 (car (value-of arg1 env is-global))]
     ;                      [val2 (car (value-of arg2 env is-global))])
@@ -279,6 +282,16 @@
     (else (begin
             (pretty-print "here")
             (pretty-print exp)))))
+)
+
+(define (apply-function func env)
+  (cases proc func
+    (procedure-without-params (name body)
+      )
+    (procedure-with-params (name params body))
+
+    ('Error))
+  )
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
