@@ -1,6 +1,7 @@
 (module environments (lib "eopl.ss" "eopl")
   
   (require "data-structures.rkt")
+  (require racket/promise)
   (provide init-env empty-env extend-env apply-env)
 
   ;;;;;;;;;;;;;;;; initial environment ;;;;;;;;;;;;;;;;
@@ -20,7 +21,16 @@
                    (eopl:error 'apply-env "Empty env ~s" search-var))
         (extend-env (bvar bval saved-env)
                     (cond
-                      ((eq? search-var bvar) bval)
+                      ((eq? search-var bvar)
+                       (cases expval bval
+                         (thunk-val (th)
+                                    (if (promise-running? th)
+                                        (apply-env saved-env search-var)
+                                        bval
+                                        ))
+                         (else bval)
+                         )
+                       )
                       (else (apply-env saved-env search-var))))
         )))
 
