@@ -18,7 +18,7 @@
 (define handle-print
   (lambda (atom)
     (cond
-      ((null? atom) (newline))
+      ((null? atom) '())
       ((list? atom) (handle-print (car atom)) (handle-print (cdr atom)))
       (else (displayln (expval->printable atom)))
       )))
@@ -151,6 +151,8 @@
 
     (python-list (exps)
                  (list (car (value-of exps env is-global)) env 0))
+    (empty-list ()
+                (list (list-val '()) env 0))
 
     (single-expression (exp)
                        (list (list-val (list (car (value-of exp env is-global)))) env 0))
@@ -266,7 +268,12 @@
             (cases expval val1
               (num-val (number1) (list (num-val (+ number1 (expval->num val2))) env 0))
               (list-val (list1) (list (list-val (append list1 (expval->list val2))) env 0))
-              (else `error))
+              (thunk-val (th1) (cases expval (force th1)
+                                 (num-val (number1) (list (num-val (+ number1 (expval->num val2))) env 0))
+                                 (list-val (list1) (list (list-val (append list1 (expval->list val2))) env 0))
+                                 (else 'inner-error)
+                                 ))
+              (else 'error))
             ))
                 
     (subtract (arg1 arg2)
