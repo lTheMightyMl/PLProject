@@ -142,7 +142,9 @@
       (cases expval exp
         (thunk-val (tv) (expval->printable (force tv)))
         (num-val (val) val)
-        (bool-val (val) val)
+        (bool-val (val) (cond
+                          (val 'True)
+                          (else 'False)))
         (list-val (val)
                   (cond
                     ((null? val) '())
